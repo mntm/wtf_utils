@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
 import struct
+import binascii
 
 mtl = timezone("America/Toronto")
 fmt = "%Y %m %d %H %M %S %f %Z %z"
@@ -16,11 +17,15 @@ def unix_time_millis(dt):
 
 
 # Take a int value and return its representation in little indian as string
-def to_little_endian (i):
+def to_hexstring (i):
     pack = struct.pack('<Q',i)
-    import binascii
     return binascii.hexlify(pack)
 
+# Return the timestamp value from a WTF hex string
+def from_hexstring (h):
+    uhex = binascii.unhexlify(h)
+    values = struct.unpack('<Q',uhex)
+    return values[0]
 
 def datetime_to_WTF_timestamp(dt,tz=None):
     if tz==None :
@@ -39,14 +44,21 @@ def WTF_timestamp_to_datetime(ts, tz=None):
     
 if __name__ == "__main__":
     
-    d1 = datetime(2018, 12, 4, 0, 46,51,103680)
+    d1 = datetime(2018, 12, 4, 0, 46,51,1037)
     timestamp = datetime_to_WTF_timestamp(d1,mtl)
-    print ("debut:\t\t%s" % (to_little_endian(timestamp)))
-    d1 = datetime(2018, 12, 4, 0, 46,55,342015)
+    print ("debut:\t\t%s" % (to_hexstring(timestamp)))
+    d1 = datetime(2018, 12, 4, 0, 46,55,34202)
     timestamp = datetime_to_WTF_timestamp(d1,mtl)
-    print ("fin:\t\t%s" % (to_little_endian(timestamp)))
-    print ("Test:\t\t%s" % (to_little_endian(131511664248689449)))
-
-
+    print ("fin:\t\t%s" % (to_hexstring(timestamp)))
+    print ("Test:\t\t%s" % (to_hexstring(131511664248689449)))
     
+    print ("\n")
+
+    hexa="94481EC1948BD401"
+    timestamp = from_hexstring(hexa)
+    d1 = WTF_timestamp_to_datetime(timestamp,mtl)
+    print ("Exemple:\t\t%s" % (d1.strftime(fmt)))
+
+        
+
 
